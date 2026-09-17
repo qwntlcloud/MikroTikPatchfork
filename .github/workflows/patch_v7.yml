@@ -911,42 +911,6 @@ jobs:
           ${{env.PUBLISH_DIR}}/*.iso.sha256
           ${{env.PUBLISH_DIR}}/routeros*.npk.sha256
 
-    - name: Upload Files
-      if: needs.Prepare_Patch.outputs.RELEASE == 'true'
-      run: |
-        sudo apt-get install -y knockd lftp > /dev/null
-        knock -4  ${{ secrets.SSH_SERVER }} ${{ secrets.SSH_KNOCK_PORT }} 
-        echo "Knocking on server..."
-        for i in 1 2 3; do
-          if knock -4  ${{ secrets.SSH_SERVER }} ${{ secrets.SSH_KNOCK_PORT }} ; then
-            echo "Knock successful"
-            break
-          else
-            echo "Knock attempt $i failed, retrying..."
-            sleep 2
-          fi
-        done
-        echo "Waiting for firewall to open SSH port..."
-        sleep 3
-        rm -f $PUBLISH_DIR/*.zip
-        rm -f $PUBLISH_DIR/*.iso
-        rm -f $PUBLISH_DIR/*.zip.sha256
-        rm -f $PUBLISH_DIR/*.iso.sha256
-        sed -i '1d' $PUBLISH_DIR/CHANGELOG
-        echo $VERSION $BUILD_TIME | tee $PUBLISH_DIR/info
-        touch $PUBLISH_DIR/$CHANNEL
-        REMOTE_PATH=${{ secrets.SSH_DIRECTORY }}/$VERSION
-        SERVER=${{ secrets.SSH_SERVER }}
-        USER=${{ secrets.SSH_USERNAME }}
-        PASS=${{ secrets.SSH_PASSWORD }}
-        PORT=${{ secrets.SSH_PORT }}
-        
-        lftp -u "$USER","$PASS" sftp://$SERVER:$PORT <<EOF
-        set sftp:auto-confirm yes
-        mirror --reverse --verbose --only-newer $PUBLISH_DIR "$REMOTE_PATH"
-        bye
-        EOF
-
     - name: Clear Cloudflare cache
       if: needs.Prepare_Patch.outputs.RELEASE == 'true'
       run: |

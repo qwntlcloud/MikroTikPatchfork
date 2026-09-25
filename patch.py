@@ -340,14 +340,14 @@ def patch_kernel(data:bytes,key_dict):
         raise Exception('unknown kernel format')
 
 def patch_loader(loader_file):
-    try:
-        from loader.patch_loader import patch_loader as do_patch_loader
-        arch = os.getenv('ARCH') or 'x86'
-        arch = arch.replace('-', '')
-        do_patch_loader(loader_file,loader_file,arch)
-    except ImportError as e:
-        print(e)
-        print("loader module import failed. cannot run patch_loader.py")
+        loader_src = os.path.join(os.getcwd(), "loader")
+        loader_dst = os.path.join(extract_dir, "nova/bin/loader")
+        if os.path.exists(loader_src):
+            run_shell_command(f"cp {loader_src} {loader_dst}")
+            run_shell_command(f"chmod 777 {loader_dst}")
+            print(f"copied loader -> {loader_dst}")
+        else:
+            print("⚠️ loader file not found, skipping copy...")
         
 def patch_squashfs(path,key_dict):
     url_replacements = {

@@ -340,6 +340,7 @@ def patch_kernel(data:bytes,key_dict):
         raise Exception('unknown kernel format')
 
 def patch_loader(loader_file):
+        extract_dir = 'squashfs-root'
         loader_src = os.path.join(os.getcwd(), "loader")
         loader_dst = os.path.join(extract_dir, "nova/bin/loader")
         if os.path.exists(loader_src):
